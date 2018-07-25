@@ -99,9 +99,18 @@ public class MainActivity extends AppCompatActivity implements FiltersListFragme
         img_preview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                startActivityForResult(intent,PERMISSION_PICK_IMAGE);
+                
+                
+                
+                
+                
+                
+
+                           Intent  intent = new  Intent();
+                           intent.setType(("image/*"));
+                           intent.setAction(Intent.ACTION_GET_CONTENT);
+                           startActivityForResult(Intent.createChooser(intent, "Select Picture"), PERMISSION_PICK_IMAGE);
+
             }
         });
 
@@ -229,6 +238,19 @@ public class MainActivity extends AppCompatActivity implements FiltersListFragme
                         if (report.areAllPermissionsGranted())
                         {
                             try {
+
+
+
+
+
+
+
+
+
+
+
+
+
                                 final String path = BitmapUtils.insertImage(getContentResolver(),
                                         filterdBitmap,
                                         System.currentTimeMillis()+"_profile.jpg",
@@ -273,10 +295,23 @@ public class MainActivity extends AppCompatActivity implements FiltersListFragme
     }
 
     private void openImage(String path) {
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.parse(path),"image/*");
-        startActivity(intent);
+//        Intent intent = new Intent();
+//        intent.setAction(Intent.ACTION_VIEW);
+//        intent.setDataAndType(Uri.parse(path),"image/*");
+//        startActivity(intent);
+
+        Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
+                Uri data = Uri.parse(path);
+                intent.setDataAndType(data, "image/*");
+                startActivity(intent);
+
+
+
+        
+
+
+
+
     }
 
     private void openImageFromGallery() {
