@@ -3,9 +3,12 @@ package com.example.abhi.instafilter;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -35,6 +38,7 @@ import com.zomato.photofilters.imageprocessors.subfilters.ContrastSubFilter;
 import com.zomato.photofilters.imageprocessors.subfilters.SaturationSubfilter;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 
@@ -95,9 +99,18 @@ public class MainActivity extends AppCompatActivity implements FiltersListFragme
         img_preview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                startActivityForResult(intent,PERMISSION_PICK_IMAGE);
+                
+                
+                
+                
+                
+                
+
+                           Intent  intent = new  Intent();
+                           intent.setType(("image/*"));
+                           intent.setAction(Intent.ACTION_GET_CONTENT);
+                           startActivityForResult(Intent.createChooser(intent, "Select Picture"), PERMISSION_PICK_IMAGE);
+
             }
         });
 
@@ -225,6 +238,19 @@ public class MainActivity extends AppCompatActivity implements FiltersListFragme
                         if (report.areAllPermissionsGranted())
                         {
                             try {
+
+
+
+
+
+
+
+
+
+
+
+
+
                                 final String path = BitmapUtils.insertImage(getContentResolver(),
                                         filterdBitmap,
                                         System.currentTimeMillis()+"_profile.jpg",
@@ -269,10 +295,23 @@ public class MainActivity extends AppCompatActivity implements FiltersListFragme
     }
 
     private void openImage(String path) {
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.parse(path),"image/*");
-        startActivity(intent);
+//        Intent intent = new Intent();
+//        intent.setAction(Intent.ACTION_VIEW);
+//        intent.setDataAndType(Uri.parse(path),"image/*");
+//        startActivity(intent);
+
+        Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
+                Uri data = Uri.parse(path);
+                intent.setDataAndType(data, "image/*");
+                startActivity(intent);
+
+
+
+        
+
+
+
+
     }
 
     private void openImageFromGallery() {
@@ -284,11 +323,15 @@ public class MainActivity extends AppCompatActivity implements FiltersListFragme
                     public void onPermissionsChecked(MultiplePermissionsReport report) {
                         if (report.areAllPermissionsGranted())
                         {
-                            Intent intent = new Intent(Intent.ACTION_PICK);
-                            intent.setType("image/*");
-                            startActivityForResult(intent,PERMISSION_PICK_IMAGE);
-                        }
-                        else 
+//                            Intent intent = new Intent(Intent.ACTION_PICK);
+//                            intent.setType("image/*");
+//                            startActivityForResult(intent,PERMISSION_PICK_IMAGE);
+
+                            Intent  intent = new  Intent();
+                            intent.setType(("image/*"));
+                            intent.setAction(Intent.ACTION_GET_CONTENT);
+                            startActivityForResult(Intent.createChooser(intent, "Select Picture"), PERMISSION_PICK_IMAGE);                        }
+                        else
                         {
                             Toast.makeText(MainActivity.this, "Permission Denied!", Toast.LENGTH_SHORT).show();
                         }
@@ -312,21 +355,49 @@ public class MainActivity extends AppCompatActivity implements FiltersListFragme
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == RESULT_OK && requestCode == PERMISSION_PICK_IMAGE)
         {
-            Bitmap bitmap = BitmapUtils.getBitmapFromgallery(this,data.getData(),800,800);
 
-            //clear bitkmap memory
-            originalBitmap.recycle();
-            finalBitmap.recycle();
-            filterdBitmap.recycle();
 
-            originalBitmap = bitmap.copy(Bitmap.Config.ARGB_8888,true);
-            filterdBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888,true);
-            finalBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888,true);
-            img_preview.setImageBitmap(originalBitmap);
-            bitmap.recycle();
+//            Bitmap bitmap = BitmapUtils.getBitmapFromgallery(this,data.getData(),800,800);
 
-            //Render Selected Image Thumbnail
-            filtersListFragment.displayThumbnail(originalBitmap);
+
+
+////                          if(resultCode == RESULT_OK){
+//                                      Uri selectedImage = data.getData();
+//                                      String[] filePathColumn = {MediaStore.Images.Media.DATA};
+//
+//                                      Cursor cursor = getContentResolver().query(
+//                                                         selectedImage, filePathColumn, null, null, null);
+//                                      cursor.moveToFirst();
+//
+//                                      int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+//                                      String filePath = cursor.getString(columnIndex);
+//                                      cursor.close();
+//
+//
+//                                      Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+//                                  }
+                                                        try {
+                                                            final Uri imageUri = data.getData();
+                                                            final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                                                            final Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
+
+
+                                                            //clear bitkmap memory
+                                                            originalBitmap.recycle();
+                                                            finalBitmap.recycle();
+                                                            filterdBitmap.recycle();
+
+                                                            originalBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+                                                            filterdBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                                                            finalBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                                                            img_preview.setImageBitmap(originalBitmap);
+                                                            bitmap.recycle();
+
+                                                            //Render Selected Image Thumbnail
+                                                            filtersListFragment.displayThumbnail(originalBitmap);
+                                                        }
+                                                        catch (Exception e)
+                                                        {}
         }
     }
 }

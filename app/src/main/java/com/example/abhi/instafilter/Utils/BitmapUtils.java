@@ -16,17 +16,22 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.ImageReader;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class BitmapUtils {
+    private static String folderName = "FlashFilter";
 
     public static Bitmap getBitMapFromAssets(Context context,String fileName,int width, int height)
     {
+
         AssetManager assetManager  = context.getAssets();
 
         InputStream inputStream;
@@ -146,13 +151,25 @@ public class BitmapUtils {
                                      Bitmap source,
                                      String title,
                                      String description) throws IOException {
+        String path = createDirectoryAndSaveFile(source, title);
+
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE,title);
-        values.put(MediaStore.Images.Media.DISPLAY_NAME,title);
-        values.put(MediaStore.Images.Media.DESCRIPTION,description );
-        values.put(MediaStore.Images.Media.MIME_TYPE,"image/jpg");
-        values.put(MediaStore.Images.Media.DATE_ADDED,System.currentTimeMillis());
-        values.put(MediaStore.Images.Media.DATE_TAKEN,System.currentTimeMillis());
+//        values.put(MediaStore.Images.Media.TITLE,title);
+//        values.put(MediaStore.Images.Media.DISPLAY_NAME,title);
+//        values.put(MediaStore.Images.Media.DESCRIPTION,description );
+//        values.put(MediaStore.Images.Media.MIME_TYPE,"image/jpg");
+//        values.put(MediaStore.Images.Media.DATE_ADDED,System.currentTimeMillis());
+//        values.put(MediaStore.Images.Media.DATE_TAKEN,System.currentTimeMillis());
+
+        values.put(MediaStore.Images.Media.TITLE, title);
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, title);
+        values.put(MediaStore.Images.Media.DESCRIPTION, description);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        // Add the date meta data to ensure the image is added at the front of the gallery
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis());
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+        values.put(MediaStore.Images.Media.DATA, path);
+
 
         Uri uri = null;
         String stringUrl = null;
@@ -192,6 +209,28 @@ public class BitmapUtils {
         return stringUrl;
 
     }
+
+    private static String createDirectoryAndSaveFile(Bitmap imageToSave, String fileName) {
+
+        File directory = new File(Environment.getExternalStorageDirectory() + File.separator + folderName);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        File file = new File(directory, fileName);
+        if (file.exists()) {
+            file.delete();
+        }
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            imageToSave.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file.getAbsolutePath();
+    }
+
 
     private static final Bitmap storeThumbnail(ContentResolver cr, Bitmap source, long id, float width, float height, int kind) {
         Matrix matrix = new Matrix();
